@@ -5,7 +5,7 @@ from tensorflow.keras.layers import Input, Dense, Dropout, Activation, Flatten, 
 
 
 def depthwise_separable_block(inpt, depthwise_conv_stride, pointwise_conv_output_filters):
-    x = DepthwiseConv2D(kernel_size=(3,3), strides=depthwise_conv_stride, padding="same")(inpt)
+    x = DepthwiseConv2D(kernel_size=(3,3), strides=(depthwise_conv_stride, depthwise_conv_stride), padding="same")(inpt)
     x = BatchNormalization()(x)
     x = ReLU()(x)
     x = Conv2D(pointwise_conv_output_filters, kernel_size=(1,1))(x)
