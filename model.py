@@ -10,16 +10,16 @@ def depthwise_separable_block(inpt, depthwise_conv_stride, pointwise_conv_output
     x = ReLU()(x)
     x = Conv2D(pointwise_conv_output_filters, kernel_size=(1,1))(x)
     x = BatchNormalization()(x)
-    x = ReLU()(x)
-    return x
+    output = ReLU()(x)
+    return output
 
 
 def dense_block(inpt, size, dropout_rate):
     x = BatchNormalization()(inpt)
     x = Dropout(dropout_rate)(x)
     x = Dense(size)(x)
-    x = ReLU()(x)
-    return x
+    output = ReLU()(x)
+    return output
 
 
 class DepthwiseSeparableConvNet:
