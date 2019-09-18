@@ -23,6 +23,6 @@ model.model.summary()
 model.train(x_train, y_train, x_test, y_test)
 
 # evaluate
-scores = model.model.evaluate(x_test, y_test, verbose=1)
+scores = model.evaluate(x_test, y_test, verbose=1)
 foundations.log_metric('test_loss', float(scores[0]))
 foundations.log_metric('test_accuracy:', float(scores[1]))
