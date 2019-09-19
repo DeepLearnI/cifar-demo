@@ -13,6 +13,12 @@ This tutorial assumes that you have already installed Foundations Atlas. If you 
 In this tutorial we make use of the CIFAR-10 dataset. This is an image recognition dataset consisting of 60,000 32x32
 RGB images. These images belong to 10 categories including: dogs, cats, boats, cars, etc...
 
+Run the following script from the project directly to download the data and get started.
+
+```shell script
+python download_data.py
+```
+
 ## Enabling Atlas Features
 
 You are provided with the following python scripts:
@@ -23,13 +29,15 @@ convolutional network, then evaluates the model on the test set
 Note that this is a fairly standard implementation and runs without any modification.
 
 To enable Atlas features, we only to need to make a few changes. Firstly import foundations in driver.py. Add the 
-following line to the top of driver.py:
+following line to the top of driver.py and model.py:
 
 ```python
 import foundations
 ```
 
-In model.py, there are some lines to print the test metrics. We'll replace those print
+### Logging Metrics
+
+In model.py, there are some lines to print the test metrics that can be found in the evaluate() function. We'll replace those print
 statements with calls to the function foundations.log_metric(). This function takes two arguments, a key and a value. Once a 
 job successfully completes, logged metrics for each job will be visible from the Foundations GUI. Copy the following two lines
 and replace the two print statements with them:
@@ -39,8 +47,30 @@ foundations.log_metric('test_loss', float(scores[0]))
 foundations.log_metric('test_accuracy:', float(scores[1]))
 ```   
 
-Lastly, a configuration file needs to be added. Create a new file in the project directory called job.config.yaml with 
-the following contents:
+### Saving Artifacts
+
+Currently, the evaluate() function saves images of the models most and least confident predictions to the data directory. 
+With Atlas, we can get save any artifact to the GUI with just one line. Add the following lines to the end of evaluate() 
+to send the locally saved images to the Atlas GUI. 
+
+```python
+foundations.save_artifact('data/most_confident_image.png', "most_confident_image")
+foundations.save_artifact('data/least_confident_image.png', "least_confident_image")
+```   
+
+### TensorBoard Integration
+
+TensorBoard is a super powerful data visualization tool that makes visualizing your training extremely easy. Foundations 
+Atlas has full TensorBoard integration. To access TensorBoard directly from the Atlas GUI, add the following line of code 
+to start of driver.py.
+
+```python
+foundations.set_tensorboard_logdir('train_logs')
+```
+
+### Configuration
+
+Lastly, create a file in the project directory named "job.config.yaml", and copy the text from below into the file. 
 
 ```yaml
 project_name: 'cifar-demo'
