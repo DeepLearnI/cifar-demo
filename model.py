@@ -1,11 +1,14 @@
-import os
+import numpy as np
+from PIL import Image
+from tensorflow.keras.callbacks import TensorBoard
 from tensorflow.keras.optimizers import RMSprop
-from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Input, Dense, Dropout, Activation, Flatten, DepthwiseConv2D, BatchNormalization, ReLU, Conv2D, MaxPooling2D
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Dense, Dropout, Flatten, DepthwiseConv2D, BatchNormalization, ReLU, Conv2D, MaxPooling2D
+import foundations
 
 
-def depthwise_separable_block(inpt, depthwise_conv_stride, pointwise_conv_output_filters):
-    x = DepthwiseConv2D(kernel_size=(3,3), strides=(depthwise_conv_stride, depthwise_conv_stride), padding="same")(inpt)
+def depthwise_separable_block(input, depthwise_conv_stride, pointwise_conv_output_filters):
+    x = DepthwiseConv2D(kernel_size=(3,3), strides=depthwise_conv_stride, padding="same")(input)
     x = BatchNormalization()(x)
     x = ReLU()(x)
     x = Conv2D(pointwise_conv_output_filters, kernel_size=(1,1))(x)
@@ -43,11 +46,36 @@ class DepthwiseSeparableConvNet:
         self.model.compile(loss='categorical_crossentropy',
                            optimizer=opt,
                            metrics=['accuracy'])
+
+        log_dir = 'train_logs'
+        tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=1)
+
         self.model.fit(x_train, y_train,
                        batch_size=self.hyperparameters['batch_size'],
                        epochs=self.hyperparameters['num_epochs'],
                        validation_data=(x_test, y_test),
-                       shuffle=True)
+                       shuffle=True,
+                       callbacks=[tensorboard_callback])
 
-    def evaluate(self, x_test, y_test):
-        return self.model.evaluate(x_test, y_test, verbose=1)
+    def evaluate(self, x_test, y_test, verbose):
+        # get predictions and scores
+        predictions = self.model.predict(x_test)
+        scores = self.model.evaluate(x_test, y_test, verbose=verbose)
+
+        foundations.log_metric('test_loss', float(scores[0]))
+        foundations.log_metric('test_accuracy:', float(scores[1]))
+
+        # get the most and least confident images from the test set
+        least_confident_prediction_index = np.argmin(np.min(predictions, axis=1))
+        most_confident_prediction_index = np.argmax(np.max(predictions, axis=1))
+
+        # Save images of the least and most confident images
+        most_confident_img = Image.fromarray((x_test[most_confident_prediction_index]*255).astype('uint8'), 'RGB')
+        least_confident_img = Image.fromarray((x_test[least_confident_prediction_index]*255).astype('uint8'), 'RGB')
+        most_confident_img = most_confident_img.resize((256, 256))
+        least_confident_img = least_confident_img.resize((256, 256))
+        most_confident_img.save('data/most_confident_image.png')
+        least_confident_img.save('data/least_confident_image.png')
+        foundations.save_artifact('data/most_confident_image.png', "most_confident_image")
+        foundations.save_artifact('data/least_confident_image.png', "least_confident_image")
+
