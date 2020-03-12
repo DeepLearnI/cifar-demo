@@ -1,6 +1,7 @@
 #  CIFAR on Atlas Tutorial
 
 Backlink: https://docs.atlas.dessa.com/en/latest/tutorials/cifar_tutorial/
+
 *Estimated time: 30 minutes*
 
 ## Introduction
